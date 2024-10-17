@@ -262,19 +262,6 @@ def create_data_loader(dataset, batch_size):
     return dataloader
 
 
-def plot_mel_spectrogram(mel_spec, title):
-    mel_spec = (
-        mel_spec.squeeze().cpu().numpy()
-    )  # Remove batch and channel dimensions, if any
-    fig, ax = plt.subplots()
-    img = ax.imshow(mel_spec, interpolation="nearest", aspect="auto", origin="lower")
-    ax.set_title(title)
-    plt.xlabel("Time (frames)")
-    plt.ylabel("Mel Filter Bins (Logscale)")
-    fig.colorbar(img, ax=ax)
-    plt.show()
-
-
 def train_cnn(
     cnn, train_loader, val_loader, test_loader, n_epochs, learning_rate, device
 ):
@@ -379,3 +366,42 @@ def train_cnn(
         "val_losses": val_losses,
         "accuracies": accuracies,
     }
+
+
+LABEL_ID = {
+    0: "air_conditioner",
+    1: "car_horn",
+    2: "children_playing",
+    3: "dog_bark",
+    4: "drilling",
+    5: "engine_idling",
+    6: "gun_shot",
+    7: "jackhammer",
+    8: "siren",
+    9: "street_music",
+}
+
+
+def plot_mel_spectrograms_by_label(mel_specs_by_label):
+    fig, axs = plt.subplots(
+        10, 4, figsize=(30, 25)
+    )  # 10 rows for 10 labels, 4 columns for each occurrence
+    fig.suptitle(
+        "Mel Spectrograms by Truth Label", fontsize=16
+    )  # Main title for the entire figure
+
+    for label, mel_specs in mel_specs_by_label.items():
+        for i, (mel_spec, ax) in enumerate(zip(mel_specs, axs[label])):
+            mel_spec = (
+                mel_spec.squeeze().cpu().numpy()
+            )  # Remove batch and channel dimensions
+            img = ax.imshow(
+                mel_spec, interpolation="nearest", aspect="auto", origin="lower"
+            )
+            ax.set_title(f"{LABEL_ID[label]}, Occurrence {i+1}")
+            ax.set_xlabel("Time (frames)")
+            ax.set_ylabel("Mel Filter Bins (Logscale)")
+            fig.colorbar(img, ax=ax)  # Add colorbar to each subplot
+
+    plt.tight_layout()
+    plt.show()
